@@ -1,5 +1,5 @@
 const mongo = require('mongodb').MongoClient
-const url = 'mongodb://46.101.205.195:27017'
+const url = 'mongodb://root:tvojastara@46.101.177.242:27017'
 
 mongo.connect(url, {
     useNewUrlParser: true,
@@ -10,5 +10,10 @@ mongo.connect(url, {
         return
     }
 
-    console.log('success', !!client)
+    const db = client.db('crawlathon')
+    const collection = db.collection('meta')
+
+    collection.find().toArray((err, items) => {
+        console.log(items)
+    })
 })
