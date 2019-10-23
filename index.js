@@ -1,19 +1,17 @@
-const mongo = require('mongodb').MongoClient
-const url = 'mongodb://root:tvojastara@46.101.177.242:27017'
+const { createBrowser } = require('./src/browser')
+const { connect } = require('./src/mongo')
 
-mongo.connect(url, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}, (err, client) => {
-    if (err) {
-        console.error(err)
-        return
-    }
+createBrowser().then(async browser => {
+    console.log('browser loaded', !!browser)
 
-    const db = client.db('crawlathon')
+    const mongoClient = await connect()
+    const db = mongoClient.db('crawlathon')
     const collection = db.collection('meta')
 
     collection.find().toArray((err, items) => {
         console.log(items)
     })
+
+    const session = await browser.loadSession('demo')
+    await session.page.goto('https://filehippo.com/')
 })
