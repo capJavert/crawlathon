@@ -1,4 +1,5 @@
-const { crawlUrl, writeData } = require('./apify')
+const { crawlUrl } = require('./src/dynamicCrawler')
+const { writeData } = require('./src/data')
 
 // crawler implementation for filehippo
 
@@ -15,7 +16,11 @@ const timeStart = Date.now()
 
 crawlUrl({
     url: 'https://filehippo.com/',
+<<<<<<< HEAD
     requestLimit: 200,
+=======
+    requestLimit: 100,
+>>>>>>> d0324bc9a9bbda19662a7503309814f15533759d
     pseudoUrls: [
         'http[s?]://filehippo.com/[.*]',
         'http[s?]://[.*].filehippo.com/[.*]',

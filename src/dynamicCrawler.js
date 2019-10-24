@@ -1,46 +1,6 @@
 const Apify = require('apify')
-const { writeFileSync } = require('fs')
-const path = require('path')
-
-// collect data in memory
-const collectData = (request, response, store) => {
-    const record = {
-        url: request.url,
-        timestamp: Date.now(),
-        hasResponse: !!response,
-        ...(response ? {
-            isOk: response.ok(),
-            status: response.status(),
-            headers: response.headers(),
-        } : undefined)
-    }
-
-    if (store[request.url]) {
-        store[request.url] = {
-            ...store[request.url],
-            ...record
-        }
-    } else {
-        store[request.url] = record
-    }
-}
-
-// write current in memory data to disk with timestamp
-const writeData = (name, data, timeStart) => {
-    const writeTime = Date.now()
-
-    const content = {
-        meta: {
-            name,
-            timeStart,
-            timeEnd: writeTime,
-            elapsedTime: writeTime - timeStart,
-        },
-        data: Object.values(data)
-    }
-
-    writeFileSync(path.join(process.cwd(), 'data', `${name}-${writeTime}.json`), JSON.stringify(content))
-}
+const { pushData } = require('./data')
+const deviceProfiles = require('./deviceProfiles')
 
 // listen for requests/responses after page payload
 // this catches for example download initiators with countdown
@@ -69,7 +29,7 @@ const crawlUrl =  ({ url, requestLimit, pseudoUrls = [], concurrency = 10, optio
             const crawler = new Apify.PuppeteerCrawler({
                 launchPuppeteerOptions: {
                     headless: true,
-                    userAgent: '2019RLCrawlAThon',
+                    userAgent: deviceProfiles.default.userAgent,
                     ...options
                 },
                 puppeteerPoolOptions: {
@@ -79,9 +39,9 @@ const crawlUrl =  ({ url, requestLimit, pseudoUrls = [], concurrency = 10, optio
                 gotoFunction: async ({ page, request }) => {
                     listenForRequests(page, listenForRequestsTimeout, type => payload =>  {
                         if (type === 'request') {
-                            collectData({ url: payload.url() }, false, store)
+                            pushData({ url: payload.url() }, false, store)
                         } else {
-                            collectData({ url: payload.url() }, payload, store)
+                            pushData({ url: payload.url() }, payload, store)
                         }
                     })
 
@@ -93,7 +53,7 @@ const crawlUrl =  ({ url, requestLimit, pseudoUrls = [], concurrency = 10, optio
                     const title = await page.title()
                     console.log(`${request.url}: ${title}`)
 
-                    collectData(request, response, store)
+                    pushData(request, response, store)
 
                     await Apify.utils.enqueueLinks({
                         page,
@@ -116,6 +76,5 @@ const crawlUrl =  ({ url, requestLimit, pseudoUrls = [], concurrency = 10, optio
 
 module.exports = {
     crawlUrl,
-    writeData,
-    listenForRequests
+    listenForRequests,
 }
