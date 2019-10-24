@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "apify": "^0.16.0",
     "isomorphic-fetch": "^2.2.1",
     "mongodb": "^3.3.3",
     "puppeteer": "1.19.0"
