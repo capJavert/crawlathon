@@ -1,6 +1,7 @@
 const parseCsv = require('csv-parse')
 
 const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)/
+const urlRegexGlobal = new RegExp(urlRegex, 'g')
 
 const jsonUrlParser = payload => {
     let data = null
@@ -64,7 +65,16 @@ const csvUrlParser = (payload, delimiter = ',') => {
     })
 }
 
+const textUrlParser = payload => {
+    if (typeof payload !== 'string') {
+        return []
+    }
+
+    return payload.match(urlRegexGlobal)
+}
+
 module.exports = {
     jsonUrlParser,
-    csvUrlParser
+    csvUrlParser,
+    textUrlParser
 }
