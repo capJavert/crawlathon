@@ -15,7 +15,7 @@ const timeStart = Date.now()
 
 crawlUrl({
     url: 'https://filehippo.com/',
-    requestLimit: 1200,
+    requestLimit: 200,
     pseudoUrls: [
         'http[s?]://filehippo.com/[.*]',
         'http[s?]://[.*].filehippo.com/[.*]',
