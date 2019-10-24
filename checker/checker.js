@@ -1,5 +1,6 @@
-const bs = require('binary-search')
-const fs = require('fs')
+const _ = require('lodash');
+const bs = require('binary-search');
+const fs = require('fs');
 
 //const cmp = (first, second) => first.value < second.value ? -1 : (first.value > second.value ? 1 : 0)
 const cmp = (first, second) => first.value.localeCompare(second.value);
@@ -79,4 +80,46 @@ exports.report = (actual, filter = []) => {
 
     const totalScore = (actual.length) + (result.missing.length * -1) + (result.extra.length * -5)
     console.log('Total score: ' + totalScore)
+}
+
+exports.reportAll = (filter = []) => {
+    const filters = [
+        // filter by content type
+        (req) => {
+            //const regex = /application\/(x-)?javascript.*|application\/x-msdos-program.*|text\/javascript.*|application\/x-msdownload.*/;
+            const regex = /application\/x-msdownload.|application\/x-msdos-program.*/;
+            
+            try {
+                const contentType = _.get(req, 'headers.content-type');
+                const res =  regex.test(contentType);
+                return res;
+            } catch (e) {
+                console.log("Error while filtering: " + JSON.stringify(req));
+                return false;
+            }
+
+            return false;
+        },
+        // filter by extension
+        (req) => {
+            const regex = /.*\.(?:zip|rar|exe|tar|iso|img|dmg|gz|7z)$/;
+            const res = regex.test(req.url);
+            return res;
+        }
+    ]
+
+
+    const results = {};
+    fs.readdirSync('./data').filter((file) => /.*\.json/.test(file)).forEach((file) => {
+        const data = require('../data/' + file).data;
+        
+        for(const req of data) {
+            if (filters.some(validator => validator(req))) {
+                results[req.url] = req
+            }
+        }
+         
+    });
+
+    this.report(_.keys(results));
 }

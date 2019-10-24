@@ -8,3 +8,4 @@ apify_storage
 live_view
 data/*
 !data/.gitkeep
+.vscode/
