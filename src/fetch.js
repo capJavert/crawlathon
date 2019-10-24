@@ -1,7 +1,8 @@
 const fetch = require('isomorphic-fetch')
+const deviceProfiles = require('./deviceProfiles')
 
 const defaultHeaders = {
-    'user-agent': '2019RLCrawlAThon'
+    'user-agent': deviceProfiles.default.userAgent
 }
 
 const getFile = async (url, options = {}) => {

@@ -1,5 +1,6 @@
 const Apify = require('apify')
 const { pushData } = require('./data')
+const deviceProfiles = require('./deviceProfiles')
 
 // listen for requests/responses after page payload
 // this catches for example download initiators with countdown
@@ -28,7 +29,7 @@ const crawlUrl =  ({ url, requestLimit, pseudoUrls = [], concurrency = 10, optio
             const crawler = new Apify.PuppeteerCrawler({
                 launchPuppeteerOptions: {
                     headless: true,
-                    userAgent: '2019RLCrawlAThon',
+                    userAgent: deviceProfiles.default.userAgent,
                     ...options
                 },
                 puppeteerPoolOptions: {
