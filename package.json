@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "test": "jest",
-    "report": "node report.js"
+    "report": "node report.js",
+    "postinstall": "patch-package"
   },
   "author": "",
   "license": "ISC",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "eslint": "^6.5.1"
+    "eslint": "^6.5.1",
+    "patch-package": "^6.2.0"
   }
 }

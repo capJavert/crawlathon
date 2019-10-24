@@ -1,0 +1,13 @@
+diff --git a/node_modules/apify/build/live_view/index.html b/node_modules/apify/build/live_view/index.html
+index 8195549..e16b923 100644
+--- a/node_modules/apify/build/live_view/index.html
++++ b/node_modules/apify/build/live_view/index.html
+@@ -216,7 +216,7 @@
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.16.0/prism.js"></script>
+ 
+ <header id="header">
+-    <h1>APIFY <span>Live view</span></h1>
++    <h1>MammaTua <span>Live view</span></h1>
+ </header>
+ 
+ <main>
