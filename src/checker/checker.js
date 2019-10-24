@@ -42,7 +42,7 @@ const check = (expected, actual) => {
     for (let i = 0; i < expected.length; i++) {
         if (expected[i].hits !== 1) {
             missing.push(expected[i].value)
-        
+
             if (expected[i].hits > 1) {
                 console.error(expected[i].value + " found multiple times: " + expected[i].hits);
             }
@@ -63,7 +63,7 @@ const check = (expected, actual) => {
 
 /**
  * Generates a simple report
- * 
+ *
  * @param actual string[] strings to compare against
  * @param filter Regex[] array of filter, only matching will be compared against
  */
@@ -94,7 +94,7 @@ const isRequestValid = (req) => {
         (req) => {
             //const regex = /application\/(x-)?javascript.*|application\/x-msdos-program.*|text\/javascript.*|application\/x-msdownload.*/;
             const regex = /application\/x-msdownload.|application\/x-msdos-program.*/;
-            
+
             try {
                 const contentType = _.get(req, 'headers.content-type');
                 const res =  regex.test(contentType);
@@ -106,7 +106,7 @@ const isRequestValid = (req) => {
         },
         // filter by extension
         (req) => {
-            const regex = /.*\.(?:zip|rar|exe|tar|iso|img|dmg|gz|7z)$/;
+            const regex = /.*\.(?:zip|rar|exe|tar|iso|img|dmg|gz|7z|pdf)$/;
             const res = regex.test(req.url);
             return res;
         }
@@ -122,13 +122,13 @@ const reportAll = () => {
     const results = {};
     fs.readdirSync('./data').filter((file) => /.*\.json/.test(file)).forEach((file) => {
         const data = require('./../../data/' + file).data;
-        
+
         for(const req of data) {
             if (isRequestValid(req)) {
                 results[req.url] = req
             }
         }
-         
+
     });
 
     report(_.keys(results));

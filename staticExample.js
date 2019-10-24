@@ -1,5 +1,5 @@
 const { writeData } = require('./src/data')
-const { crawlUrls } = require('./src/staticCrawler')
+const { crawlUrls } = require('./src/crawler/staticCrawler')
 
 const timeStart = Date.now()
 

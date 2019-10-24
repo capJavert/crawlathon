@@ -1,6 +1,6 @@
 const Apify = require('apify')
-const { pushData } = require('./data')
-const deviceProfiles = require('./deviceProfiles')
+const { pushData } = require('../data')
+const deviceProfiles = require('../deviceProfiles')
 
 // listen for requests/responses after page payload
 // this catches for example download initiators with countdown

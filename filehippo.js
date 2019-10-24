@@ -1,4 +1,4 @@
-const { crawlUrl } = require('./src/dynamicCrawler')
+const { crawlUrl } = require('./src/crawler/dynamicCrawler')
 const { writeData } = require('./src/data')
 
 // crawler implementation for filehippo

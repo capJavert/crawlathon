@@ -1,10 +1,10 @@
 const Apify = require('apify')
-const { pushData } = require('./data')
-const { getTextFile } = require('./fetch')
-const { jsonUrlParser, csvUrlParser, textUrlParser } = require('./parser')
+const { pushData } = require('../data')
+const { getTextFile } = require('../fetch')
+const { jsonUrlParser, csvUrlParser, textUrlParser } = require('../parser')
 
 // static crawler supports json, csv and plaintext
-const crawlUrls = async ({ urls, requestLimit, concurrency = 10, options = {} }, ) => {
+const crawlUrls = async ({ urls, requestLimit, concurrency = 10, options = {} }) => {
     const store = {}
 
     return new Promise(resolve => {
@@ -26,21 +26,18 @@ const crawlUrls = async ({ urls, requestLimit, concurrency = 10, options = {} },
                     try {
                         urls = jsonUrlParser(JSON.parse(result))
                     } catch (e) {
-                        console.error(' - not json')
-
                         const csvUrls = await csvUrlParser(result)
 
                         if (csvUrls.length) {
                             urls = csvUrls
                         } else {
-                            console.error(' - not csv')
-                            console.error(' - fallback to plain text')
-
                             urls = textUrlParser(result)
                         }
                     }
 
-                    urls.forEach(url => pushData({ url }, false, store))
+                    if (urls && urls.length) {
+                        urls.forEach(url => pushData({ url }, false, store))
+                    }
                 },
                 maxRequestsPerCrawl: requestLimit,
                 maxConcurrency: concurrency,
