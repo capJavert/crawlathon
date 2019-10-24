@@ -1,7 +1,7 @@
 const { createBrowser } = require('./src/browser')
-const { listenForRequests } = require('./src/crawler/dynamicCrawler')
+const { listenForRequests } = require('./src/crawlers/dynamicCrawler')
 const { writeData } = require('./src/data')
-const { crawlUrls } = require('./src/crawler/staticCrawler')
+const { crawlUrls } = require('./src/crawlers/staticCrawler')
 
 createBrowser({ headless: true }).then(async browser => {
     const session = await browser.utils.loadSession('demo')

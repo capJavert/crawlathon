@@ -26,14 +26,10 @@ test('filehippo test', async () => {
   ]
 
 
-  const result1 = validResults.every(Promise.all(async (url)=>{
-    return await robot.checkAllowedRobots(url)
-  }))
-  expect(result1).to.eql(true);
+  const result1 = await Promise.all(validResults.map(url => robot.checkAllowedRobots(url)))
+  expect(result1.every(res => res)).to.eql(true)
 
-  const result2 = invalidResults.every(Promise.all(async (url)=>{
-    return !(await robot.checkAllowedRobots(url))
-  }))
-  expect(result2).to.eql(true);
+  const result2 = await Promise.all(invalidResults.map(url => robot.checkAllowedRobots(url)))
+  expect(result2.every(res => res)).to.eql(false)
 
 });

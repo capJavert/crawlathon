@@ -1,5 +1,3 @@
-
-const rp = require('request-promise');
 const { parse, format } = require('url');
 const robotsParser = require('robots-parser');
 const { getTextFile } = require('../src/fetch')
@@ -17,17 +15,18 @@ async function checkAllowedRobots(url) {
   return robot.isAllowed(url, userAgent);
 }
 
+const robotsCache = {}
+
 async function getRobot(url) {
   const robotsUrl = getRobotsUrl(url);
-  const robotsTxt = await getTextFile(robotsUrl)
+  let robotsTxt = robotsCache[url] || await getTextFile(robotsUrl)
+
   if (!robotsTxt) {
-    try {
-      robotsTxt = await rp(robotsUrl);
-    } catch (error) {
-      extend(error, { url });
-      robotsTxt = EMPTY_TXT;
-    }
+      return null
   }
+
+  robotsCache[url] = robotsTxt
+
   return robotsParser(robotsUrl, robotsTxt);
 }
 

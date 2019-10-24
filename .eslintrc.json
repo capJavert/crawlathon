@@ -16,6 +16,7 @@
     },
     "rules": {
         "no-console": "off",
-        "no-unexpected-multiline": "off"
+        "no-unexpected-multiline": "off",
+        "require-atomic-updates": "off"
     }
 }
