@@ -1,3 +1,3 @@
-const checker = require('./checker/checker');
+const checker = require('./src/checker/checker');
 
 checker.reportAll();
