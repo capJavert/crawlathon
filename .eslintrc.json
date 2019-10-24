@@ -7,12 +7,15 @@
     "extends": "eslint:recommended",
     "globals": {
         "Atomics": "readonly",
-        "SharedArrayBuffer": "readonly"
+        "SharedArrayBuffer": "readonly",
+        "document": "readonly",
+        "window": "readonly"
     },
     "parserOptions": {
         "ecmaVersion": 2018
     },
     "rules": {
-        "no-console": "off"
+        "no-console": "off",
+        "no-unexpected-multiline": "off"
     }
 }
