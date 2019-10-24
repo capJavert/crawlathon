@@ -6,3 +6,5 @@ yarn.lock
 coverage
 apify_storage
 live_view
+data/*
+!data/.gitkeep
