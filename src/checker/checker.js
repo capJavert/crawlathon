@@ -9,7 +9,7 @@ const cmp = (first, second) => first.value.localeCompare(second.value);
  * @param values string[] values to write
  * @param filename string location to write to
  */
-exports.sortAndWrite = (values, filename = './checker/sorted_temp_links.txt') => {
+const sortAndWrite = (values, filename = './test_data/sorted_valid_links.txt') => {
     values.sort((first, second) => first.localeCompare(second));
     fs.writeFileSync(filename, values.join('\n'))
 }
@@ -18,7 +18,7 @@ exports.sortAndWrite = (values, filename = './checker/sorted_temp_links.txt') =>
  * @param expected string[] sorted expected strings
  * @param actual string[] actual string
  */
-exports.check = (expected, actual) => {
+const check = (expected, actual) => {
     for (let i = 0; i < expected.length; i++) {
         expected[i] = { value: expected[i], hits: 0 }
     }
@@ -62,27 +62,33 @@ exports.check = (expected, actual) => {
 };
 
 /**
+ * Generates a simple report
+ * 
  * @param actual string[] strings to compare against
  * @param filter Regex[] array of filter, only matching will be compared against
  */
-exports.report = (actual, filter = []) => {
-    let expected = fs.readFileSync('./checker/sorted_valid_links.txt').toString().split("\n");
+const report = (actual, filter = []) => {
+    let expected = fs.readFileSync('./test_data/sorted_valid_links.txt').toString().split("\n");
 
     if (filter.length > 0) {
         expected = expected.filter((item) => filter.some((re) => re.test(item)));
     }
 
-    const result = this.check(expected, actual);
+    const result = check(expected, actual);
 
     console.log('Found links: ' + actual.length);
     console.log('Missing links: ' + result.missing.length);
     console.log('Extra links: ' + result.extra.length);
 
-    const totalScore = (actual.length) + (result.missing.length * -1) + (result.extra.length * -5)
+    const totalScore = actual.length + (result.extra.length * -5)
     console.log('Total score: ' + totalScore)
 }
 
-exports.reportAll = (filter = []) => {
+/**
+ * @param req request object from crwaler
+ * @returns boolean is link valid
+ */
+const isRequestValid = (req) => {
     const filters = [
         // filter by content type
         (req) => {
@@ -97,8 +103,6 @@ exports.reportAll = (filter = []) => {
                 console.log("Error while filtering: " + JSON.stringify(req));
                 return false;
             }
-
-            return false;
         },
         // filter by extension
         (req) => {
@@ -108,18 +112,31 @@ exports.reportAll = (filter = []) => {
         }
     ]
 
+    return filters.some(validator => validator(req));
+}
 
+/**
+ * Generates a simple report from crawled data json results in 'data' directory and the target results
+ */
+const reportAll = () => {
     const results = {};
     fs.readdirSync('./data').filter((file) => /.*\.json/.test(file)).forEach((file) => {
-        const data = require('../data/' + file).data;
+        const data = require('./../../data/' + file).data;
         
         for(const req of data) {
-            if (filters.some(validator => validator(req))) {
+            if (isRequestValid(req)) {
                 results[req.url] = req
             }
         }
          
     });
 
-    this.report(_.keys(results));
+    report(_.keys(results));
+}
+
+module.exports = {
+    check,
+    report,
+    reportAll,
+    isRequestValid
 }
