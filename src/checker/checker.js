@@ -89,15 +89,39 @@ const report = (actual, filter = []) => {
  * @param req request object from crwaler
  * @returns boolean is link valid
  */
-const isRequestValid = (req) => {
+const isRequestValid = (req, includeJs = true) => {
     const filters = [
         // filter out images, videos and other shit
         (req) => {
-            const regex = /.*google.*|.*\.png|.*\.jpg|.*\.jepg|.*\.gif|.*\.mp4|.*\.vid/;
+            if (!includeJs) {
+                const jsRegex = /.*\.js(\?|$)/;
+
+                if (jsRegex.test(req.url)) {
+                    return false
+                }
+            }
+
+            const regex = /.*(google|.*\.png|.*\.jpg|.*\.jepg|.*\.gif|.*\.mp4|.*\.vid|.*\.css)(\?.*|$)/;
 
             if (regex.test(req.url)) {
                 return false;
             }
+        },
+        // filter out by content type
+        (req) => {
+            //const regex = /application\/(x-)?javascript.*|application\/x-msdos-program.*|text\/javascript.*|application\/x-msdownload.*/;
+            const regex = /image.*|font.*|text\/css.*/;
+
+            try {
+                const contentType = _.get(req, 'headers.content-type');
+                const res =  regex.test(contentType);
+                if (res) return true;
+            } catch (e) {
+                console.log("Error while filtering: " + JSON.stringify(req));
+                return null;
+            }
+
+            return null;
         },
         // filter by content type
         (req) => {
@@ -117,7 +141,7 @@ const isRequestValid = (req) => {
         },
         // filter by extension
         (req) => {
-            const regex = /.*\.(?:zip|rar|exe|tar|iso|img|dmg|gz|7z|pdf|.*post_download.*)$/;
+            const regex = /.*\.(?:zip|rar|exe|tar|iso|img|dmg|gz|7z|pdf|.*post_download.*)(\?.*|$)/;
             const res = regex.test(req.url);
             if (res) return true;
             
@@ -130,9 +154,12 @@ const isRequestValid = (req) => {
         if (res === true) {
             return true;
         } else if (res === false) {
-            return
+            return false;
         }
     }
+
+    // default to true
+    return true;
 }
 
 /**
