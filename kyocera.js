@@ -2,6 +2,7 @@ const { createBrowser } = require('./src/browser')
 const { listenForRequests } = require('./src/crawlers/dynamicCrawler')
 const { writeData } = require('./src/data')
 const { crawlUrls } = require('./src/crawlers/staticCrawler')
+const { checkAllowedRobots } = require('./src/robots/checkAllowedRobots')
 
 createBrowser({ headless: true }).then(async browser => {
     const session = await browser.utils.loadSession('demo')
@@ -14,6 +15,7 @@ createBrowser({ headless: true }).then(async browser => {
             return
         }
 
+        urls.filter(url => checkAllowedRobots(url))
         urls.push(request.url())
     }).then(() => {
         const timeStart = Date.now()

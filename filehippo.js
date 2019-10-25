@@ -1,12 +1,16 @@
 const { crawlUrl } = require('./src/crawlers/dynamicCrawler')
 const { writeData } = require('./src/data')
-
+const { checkAllowedRobots } = require('./src/robots/checkAllowedRobots')
 // crawler implementation for filehippo
 
 const transformRequestFunction = request => {
     // example of how ignore some requests that have been queued
     if (['/es', '/de', '/fr', '/it', '/pl', '/jp', '/zh'].some(prefix => request.url.indexOf(prefix) > -1)) {
         return undefined
+    }
+
+    if (checkAllowedRobots(request.url) === false) {
+      return undefined
     }
 
     return request

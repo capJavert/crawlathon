@@ -1,7 +1,8 @@
 const { parse, format } = require('url');
 const robotsParser = require('robots-parser');
-const { getTextFile } = require('../src/fetch')
-const deviceProfiles = require('../src/deviceProfiles')
+const { getTextFile } = require('../fetch')
+const deviceProfiles = require('../deviceProfiles')
+const robotsCache = {}
 
 // const url = process.argv[2];
 // if (!url) {
@@ -15,17 +16,15 @@ async function checkAllowedRobots(url) {
   return robot.isAllowed(url, userAgent);
 }
 
-const robotsCache = {}
-
 async function getRobot(url) {
   const robotsUrl = getRobotsUrl(url);
-  let robotsTxt = robotsCache[url] || await getTextFile(robotsUrl)
+  let robotsTxt = robotsCache[robotsUrl] || await getTextFile(robotsUrl)
 
   if (!robotsTxt) {
       return null
   }
 
-  robotsCache[url] = robotsTxt
+  robotsCache[robotsUrl] = robotsTxt
 
   return robotsParser(robotsUrl, robotsTxt);
 }
