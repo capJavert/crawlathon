@@ -79,6 +79,7 @@ const report = (actual, filter = []) => {
     console.log('Found links: ' + actual.length);
     console.log('Missing links: ' + result.missing.length);
     console.log('Extra links: ' + result.extra.length);
+    // console.log(result.extra) 
 
     const totalScore = actual.length + (result.extra.length * -5)
     console.log('Total score: ' + totalScore)
@@ -90,6 +91,14 @@ const report = (actual, filter = []) => {
  */
 const isRequestValid = (req) => {
     const filters = [
+        // filter out images, videos and other shit
+        (req) => {
+            const regex = /.*google.*|.*\.png|.*\.jpg|.*\.jepg|.*\.gif|.*\.mp4|.*\.vid/;
+
+            if (regex.test(req.url)) {
+                return false;
+            }
+        },
         // filter by content type
         (req) => {
             //const regex = /application\/(x-)?javascript.*|application\/x-msdos-program.*|text\/javascript.*|application\/x-msdownload.*/;
@@ -98,21 +107,32 @@ const isRequestValid = (req) => {
             try {
                 const contentType = _.get(req, 'headers.content-type');
                 const res =  regex.test(contentType);
-                return res;
+                if (res) return true;
             } catch (e) {
                 console.log("Error while filtering: " + JSON.stringify(req));
-                return false;
+                return null;
             }
+
+            return null;
         },
         // filter by extension
         (req) => {
-            const regex = /.*\.(?:zip|rar|exe|tar|iso|img|dmg|gz|7z|pdf)$/;
+            const regex = /.*\.(?:zip|rar|exe|tar|iso|img|dmg|gz|7z|pdf|.*post_download.*)$/;
             const res = regex.test(req.url);
-            return res;
+            if (res) return true;
+            
+            return null;
         }
     ]
 
-    return filters.some(validator => validator(req));
+    for (const filter of filters) {
+        const res = filter(req);
+        if (res === true) {
+            return true;
+        } else if (res === false) {
+            return
+        }
+    }
 }
 
 /**
