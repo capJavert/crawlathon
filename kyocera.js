@@ -15,12 +15,11 @@ createBrowser({ headless: true }).then(async browser => {
             return
         }
 
-        urls.filter(url => checkAllowedRobots(url))
         urls.push(request.url())
     }).then(() => {
         const timeStart = Date.now()
 
-        crawlUrls({ urls: urls }).then(data => {
+        crawlUrls({ urls: urls.filter(url => checkAllowedRobots(url)) }).then(data => {
             writeData('kyocera', data, timeStart)
         })
     })

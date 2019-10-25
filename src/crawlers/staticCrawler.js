@@ -4,7 +4,7 @@ const { getTextFile } = require('../fetch')
 const { jsonUrlParser, csvUrlParser, textUrlParser } = require('../parser')
 
 // static crawler supports json, csv and plaintext
-const crawlUrls = async ({ urls, requestLimit, concurrency = 10, options = {} }) => {
+const crawlUrls = ({ urls, requestLimit, concurrency = 10, options = {} }) => {
     const store = {}
 
     return new Promise(resolve => {

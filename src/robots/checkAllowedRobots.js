@@ -12,6 +12,11 @@ const robotsCache = {}
 
 async function checkAllowedRobots(url) {
   const robot = await getRobot(url);
+
+  if (!robot) {
+      return true
+  }
+
   const userAgent = await getUserAgent();
   return robot.isAllowed(url, userAgent);
 }
