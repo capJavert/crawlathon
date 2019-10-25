@@ -1,18 +1,20 @@
 const { writeFileSync } = require('fs')
 const path = require('path')
 
+const buildRecord = (request, response) => ({
+    url: request.url,
+    timestamp: Date.now(),
+    hasResponse: !!response,
+    ...(response ? {
+        isOk: response.ok(),
+        status: response.status(),
+        headers: response.headers(),
+    } : undefined)
+})
+
 // collect data in memory
 const pushData = (request, response, store) => {
-    const record = {
-        url: request.url,
-        timestamp: Date.now(),
-        hasResponse: !!response,
-        ...(response ? {
-            isOk: response.ok(),
-            status: response.status(),
-            headers: response.headers(),
-        } : undefined)
-    }
+    const record = buildRecord(request, response)
 
     if (store[request.url]) {
         store[request.url] = {
@@ -44,5 +46,6 @@ const writeData = (name, data, timeStart) => {
 
 module.exports = {
     pushData,
-    writeData
+    writeData,
+    buildRecord
 }

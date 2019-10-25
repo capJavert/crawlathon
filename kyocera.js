@@ -19,8 +19,8 @@ createBrowser({ headless: true }).then(async browser => {
     }).then(() => {
         const timeStart = Date.now()
 
-        crawlUrls({ urls: urls.filter(url => checkAllowedRobots(url)) }).then(data => {
-            writeData('kyocera', data, timeStart)
+        crawlUrls({ name: 'kyocera', urls: urls.filter(url => checkAllowedRobots(url)), log: true }).then(({ name, data }) => {
+            writeData(name, data, timeStart)
         })
     })
 

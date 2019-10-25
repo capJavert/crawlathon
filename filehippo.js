@@ -10,7 +10,7 @@ const transformRequestFunction = request => {
     }
 
     if (checkAllowedRobots(request.url) === false) {
-      return undefined
+        return undefined
     }
 
     return request
@@ -19,6 +19,7 @@ const transformRequestFunction = request => {
 const timeStart = Date.now()
 
 crawlUrl({
+    name: 'filehippo',
     url: 'https://filehippo.com/',
     requestLimit: 1200,
     pseudoUrls: [
@@ -29,6 +30,6 @@ crawlUrl({
     options: { headless: true },
     transformRequestFunction
 
-}).then(data => {
-    writeData('filehippo', data, timeStart)
+}).then(({ name, data }) => {
+    writeData(name, data, timeStart)
 })
