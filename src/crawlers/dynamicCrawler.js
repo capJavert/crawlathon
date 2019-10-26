@@ -2,6 +2,7 @@ const Apify = require('apify')
 const { pushData } = require('../data')
 const deviceProfiles = require('../deviceProfiles')
 const chalk = require('chalk')
+const _ = require('lodash');
 
 process.on('SIGINT', () => {
     if (typeof global.onTerminate === 'function') {
@@ -32,12 +33,20 @@ const crawlUrl = async ({ name, url, requestLimit, pseudoUrls = [], concurrency 
 
     const store = {}
     const requestQueue = await Apify.openRequestQueue()
-    await requestQueue.addRequest(
-        new Apify.Request({
-            url,
-            ...fetchOptions
-        })
-    )
+
+    if (!_.isArray(url)) {
+        url = [url]
+    }
+
+    for (const item of url) {
+        await requestQueue.addRequest(
+            new Apify.Request({
+                url: item,
+                ...fetchOptions
+            })
+        )
+    }
+
     const parsedPseudoUrls = pseudoUrls.map(pseudoUrl => new Apify.PseudoUrl(pseudoUrl))
 
     global.onTerminate = () => onTerminate({ name, data: store })

@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const bs = require('binary-search');
 const fs = require('fs');
+const chalk = require('chalk');
 
 //const cmp = (first, second) => first.value < second.value ? -1 : (first.value > second.value ? 1 : 0)
 const cmp = (first, second) => first.value.localeCompare(second.value);
@@ -210,7 +211,9 @@ const reportAll = () => {
     
     for (const site of _.keys(results)) {
         const actual = results[site].map((req) => req.url);
+        console.log('Reporting for', chalk.yellow(site));
         const res = report(actual, [], results);
+        console.log(chalk.yellow('----------------------------------------------------'));
         reports[site] = res;
     }
 
