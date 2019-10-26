@@ -160,7 +160,7 @@ const isRequestValid = (req, includeJs = true, defaultReturn = false) => {
  * @param actual string[] strings to compare against
  * @param filter Regex[] array of filter, only matching will be compared against
  */
-const report = (actual, filter = [], results, site) => {
+const report = (actual, filter = [], results) => {
     let expected = fs.readFileSync('./test_data/sorted_valid_links.txt').toString().split("\n");
 
     if (filter.length > 0) {
@@ -169,8 +169,6 @@ const report = (actual, filter = [], results, site) => {
 
     const result = check(expected, actual);
 
-    console.log()
-    console.log(chalk.bold(site))
     console.log('Found links: ' + actual.length);
     console.log('Missing links: ' + result.missing.length);
     console.log('Extra links: ' + result.extra.length);
@@ -213,7 +211,9 @@ const reportAll = () => {
 
     for (const site of _.keys(results)) {
         const actual = results[site].map((req) => req.url);
-        const res = report(actual, [], results, site);
+        console.log('Reporting for', chalk.yellow(site));
+        const res = report(actual, [], results);
+        console.log(chalk.yellow('----------------------------------------------------'));
         reports[site] = res;
     }
 

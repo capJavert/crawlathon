@@ -10,6 +10,12 @@ const robotsCache = {}
 // }
 // checkAllowedRobots(url).then(console.log).catch(console.error);;
 
+async function getSiteMaps(url) {
+  const robot = await getRobot(url);
+
+  return robot.getSitemaps();
+}
+
 async function checkAllowedRobots(url) {
   const robot = await getRobot(url);
 
@@ -43,4 +49,4 @@ function getRobotsUrl(url) {
   return format({ protocol, host, pathname: '/robots.txt' });
 }
 
-module.exports = { checkAllowedRobots }
+module.exports = { checkAllowedRobots, getSiteMaps }
