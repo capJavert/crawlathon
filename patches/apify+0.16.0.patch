@@ -1,3 +1,28 @@
+diff --git a/node_modules/apify/build/crawlers/puppeteer_crawler.js b/node_modules/apify/build/crawlers/puppeteer_crawler.js
+index c7afa9a..5612f83 100644
+--- a/node_modules/apify/build/crawlers/puppeteer_crawler.js
++++ b/node_modules/apify/build/crawlers/puppeteer_crawler.js
+@@ -204,6 +204,7 @@ class PuppeteerCrawler {
+       requestQueue,
+       maxRequestRetries,
+       maxRequestsPerCrawl,
++      handleRequestFunction,
+       handleFailedRequestFunction = this._defaultHandleFailedRequestFunction,
+       autoscaledPoolOptions,
+       // PuppeteerPool options and shorthands
+@@ -238,7 +239,11 @@ class PuppeteerCrawler {
+       requestQueue,
+       maxRequestRetries,
+       maxRequestsPerCrawl,
+-      handleRequestFunction: (...args) => this._handleRequestFunction(...args),
++      handleRequestFunction: (...args) => {
++          handleRequestFunction(...args);
++
++          return this._handleRequestFunction(...args);
++      },
+       handleRequestTimeoutSecs: handlePageTimeoutSecs * _constants.BASIC_CRAWLER_TIMEOUT_MULTIPLIER,
+       handleFailedRequestFunction,
+       // Autoscaled pool options.
 diff --git a/node_modules/apify/build/live_view/index.html b/node_modules/apify/build/live_view/index.html
 index 8195549..e16b923 100644
 --- a/node_modules/apify/build/live_view/index.html
