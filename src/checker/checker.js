@@ -173,8 +173,10 @@ const report = (actual, filter = [], results) => {
     console.log('Extra links: ' + result.extra.length);
     // console.log(result.extra);
 
-    const totalScore = actual.length + (result.extra.length * -1)
-    console.log('Total score: ' + totalScore)
+    const totalScore = actual.length + (result.extra.length * -1);
+    console.log('Total score: ' + totalScore);
+
+    return actual.map((item) => item.value);
 }
 
 /**
@@ -182,33 +184,37 @@ const report = (actual, filter = [], results) => {
  */
 const reportAll = () => {
     const results = {};
-    var filesToRead = [];
 
-    fs.readdirSync('./data').forEach((dir) => {
-        const path = `./data/${dir}`;
-        if (fs.lstatSync(path).isFile()) {
-            return;
+    fs.readdirSync('./data').filter((file) => /\.json/.test(file)).forEach((file) => {
+        const source = require('./../../data/' + file);
+        const data = source.data
+        const name = _.get(source, 'meta.name', null);
+
+        if (name === null) {
+            console.log(chalk.red('Data "name" missing in reporting'));
+            throw new Error('Data "name" missing in reporting');
         }
 
-        const newFiles = fs.readdirSync(path).filter((file) => /.*\.json/.test(file)).map((file) => `${path}/${file}`);
-        filesToRead = [
-            ...filesToRead,
-            ...newFiles,
-        ]
-    });
-
-    filesToRead.forEach((file) => {
-        const data = require('./../../' + file).data;
+        if (results.name === undefined) {
+            results[name] = [];
+        }
 
         for(const req of data) {
             if (isRequestValid(req, false, true)) {
-                results[req.url] = req
+                results[name].push(req);
             }
         }
-
     });
 
-    report(_.keys(results), [], results);
+    const reports = {};
+    
+    for (const site of _.keys(results)) {
+        const actual = results[site].map((req) => req.url);
+        const res = report(actual, [], results);
+        reports[site] = res;
+    }
+
+    return reports;
 }
 
 module.exports = {
