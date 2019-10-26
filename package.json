@@ -19,6 +19,7 @@
     "isomorphic-fetch": "^2.2.1",
     "jest": "^24.9.0",
     "lodash": "^4.17.15",
+    "md5": "^2.2.1",
     "mongodb": "^3.3.3",
     "puppeteer": "1.19.0",
     "request": "^2.88.0",
