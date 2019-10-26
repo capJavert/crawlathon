@@ -20,7 +20,7 @@ const submitUris = async (siteName, uris = []) => {
 
     for(const chunk of splitUris) {
         fetch('http://hackathon.reversinglabs.com/api/test/bulk', {
-            method: 'GET',
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Basic ' + Buffer.from(username + ':' + password).toString('base64'),
