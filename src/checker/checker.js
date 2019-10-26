@@ -90,21 +90,21 @@ const report = (actual, filter = []) => {
  * @returns boolean is link valid
  */
 const isRequestValid = (req, includeJs = true) => {
-    const filters = [
-        // filter out images, videos and other shit
+    const blackLister = [
+        // filter out by url content
         (req) => {
             if (!includeJs) {
                 const jsRegex = /.*\.js(\?|$)/;
 
                 if (jsRegex.test(req.url)) {
-                    return false
+                    return true
                 }
             }
 
             const regex = /.*(google|.*\.png|.*\.jpg|.*\.jepg|.*\.gif|.*\.mp4|.*\.vid|.*\.css)(\?.*|$)/;
 
             if (regex.test(req.url)) {
-                return false;
+                return true;
             }
         },
         // filter out by content type
@@ -114,49 +114,38 @@ const isRequestValid = (req, includeJs = true) => {
 
             try {
                 const contentType = _.get(req, 'headers.content-type');
-                const res =  regex.test(contentType);
-                if (res) return true;
+                 return regex.test(contentType);
             } catch (e) {
                 console.log("Error while filtering: " + JSON.stringify(req));
-                return null;
+                return false;
             }
+        }
+    ]
 
-            return null;
-        },
+    const whiteLister = [
         // filter by content type
         (req) => {
             //const regex = /application\/(x-)?javascript.*|application\/x-msdos-program.*|text\/javascript.*|application\/x-msdownload.*/;
-            const regex = /application\/x-msdownload.|application\/x-msdos-program.*/;
+            const regex = /application\/x-msdownload.|application\/x-msdos-program.*|application\/octet\-stream.*/;
 
             try {
                 const contentType = _.get(req, 'headers.content-type');
-                const res =  regex.test(contentType);
-                if (res) return true;
+                return regex.test(contentType);
             } catch (e) {
                 console.log("Error while filtering: " + JSON.stringify(req));
-                return null;
+                return false;
             }
-
-            return null;
         },
         // filter by extension
         (req) => {
             const regex = /.*\.(?:zip|rar|exe|tar|iso|img|dmg|gz|7z|pdf|.*post_download.*)(\?.*|$)/;
-            const res = regex.test(req.url);
-            if (res) return true;
-            
-            return null;
+            return regex.test(req.url);
         }
     ]
 
-    for (const filter of filters) {
-        const res = filter(req);
-        if (res === true) {
-            return true;
-        } else if (res === false) {
-            return false;
-        }
-    }
+    if (blackLister.some(validator => validator(req))) return false;
+
+    if (whiteLister.some(validator => validator(req))) return true;
 
     // default to true
     return true;
