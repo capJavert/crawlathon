@@ -26,7 +26,6 @@ const onFinish = ({ name, data }) => {
 
 parseSiteMap('https://filehippo.com/', ['/es', '/de', '/fr', '/it', '/pl', '/jp', '/zh'])
     .then((urls) => {
-        console.log(urls);
         return crawlUrl({
             name: 'filehippo',
             url: urls,
