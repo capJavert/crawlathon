@@ -201,7 +201,7 @@ const reportAll = () => {
         const data = require('./../../' + file).data;
 
         for(const req of data) {
-            if (isRequestValid(req, includeJs = false, defaultReturn = true)) {
+            if (isRequestValid(req, false, true)) {
                 results[req.url] = req
             }
         }
