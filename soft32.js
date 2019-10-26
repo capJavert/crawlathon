@@ -14,6 +14,10 @@ const transformRequestFunction = request => {
 
 const timeStart = Date.now()
 
+const onFinish = ({ name, data }) => {
+    writeData(name, data, timeStart)
+}
+
 crawlUrl({
     name: 'soft32',
     url: 'https://www.soft32.com/',
@@ -54,7 +58,8 @@ crawlUrl({
         requests.forEach(req => requestQueue.addRequest(req, { forefront: req.priority }))
 
         return requests
-    }
+    },
+    onTerminate: onFinish
 }).then(({ name, data }) => {
-    writeData(name, data, timeStart)
+    onFinish({ name, data })
 })

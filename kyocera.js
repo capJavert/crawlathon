@@ -4,7 +4,7 @@ const { writeData } = require('./src/data')
 const { crawlUrls } = require('./src/crawlers/staticCrawler')
 const { checkAllowedRobots } = require('./src/robots/checkAllowedRobots')
 
-createBrowser({ headless: true }).then(async browser => {
+createBrowser({ headless: true, userDataDir: './data/kyocera/chrome' }).then(async browser => {
     const session = await browser.utils.loadSession('demo')
     const { page } = session
 
@@ -19,8 +19,17 @@ createBrowser({ headless: true }).then(async browser => {
     }).then(() => {
         const timeStart = Date.now()
 
-        crawlUrls({ name: 'kyocera', urls: urls.filter(url => checkAllowedRobots(url)), log: true }).then(({ name, data }) => {
+        const onFinish = ({ name, data }) => {
             writeData(name, data, timeStart)
+        }
+
+        crawlUrls({
+            name: 'kyocera',
+            urls: urls.filter(url => checkAllowedRobots(url)),
+            log: true,
+            onTerminate: onFinish
+        }).then(({ name, data }) => {
+            onFinish({ name, data })
         })
     })
 
