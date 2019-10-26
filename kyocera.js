@@ -1,10 +1,14 @@
 const { createBrowser } = require('./src/browser')
 const { listenForRequests } = require('./src/crawlers/dynamicCrawler')
-const { writeData } = require('./src/data')
+const { writeData, toggleMongo, initMongo, toggleMongoVerbose } = require('./src/data')
 const { crawlUrls } = require('./src/crawlers/staticCrawler')
 const { checkAllowedRobots } = require('./src/robots/checkAllowedRobots')
 
+toggleMongo(true)
+toggleMongoVerbose(false)
+
 createBrowser({ headless: true, userDataDir: './data/kyocera_thai/chrome' }).then(async browser => {
+    await initMongo()
     const session = await browser.utils.loadSession('demo')
     const { page } = session
 

@@ -1,5 +1,21 @@
 const { writeFileSync } = require('fs')
 const path = require('path')
+const { connect, insertData } = require('./mongo')
+var md5 = require('md5')
+
+let mongoClient = null
+let db = null
+const collections = {}
+let useMongo = false
+let mongoVerbose = false
+
+const initMongo = async () => {
+    mongoClient = await connect()
+    db = mongoClient.db('crawlathon')
+    collections.meta = db.collection('meta')
+    collections.data = db.collection('data')
+    collections.headers = db.collection('headers')
+}
 
 const buildRecord = (request, response) => ({
     url: request.url,
@@ -24,6 +40,21 @@ const pushData = (request, response, store) => {
     } else {
         store[request.url] = record
     }
+
+    if (useMongo && mongoClient) {
+        const id = md5(request.url)
+        const mongoData = {
+            ...store[request.url]
+        }
+
+        if (mongoData.hasResponse) {
+            mongoData.headers.responseId = id
+            insertData(collections.headers, { responseId: id }, mongoData.headers, mongoVerbose)
+            mongoData.headers = id
+        }
+
+        insertData(collections.data, { url: mongoData }, mongoData, mongoVerbose)
+    }
 }
 
 // write current in memory data to disk with timestamp
@@ -43,9 +74,19 @@ const writeData = (name, data, timeStart) => {
     writeFileSync(path.join(process.cwd(), 'data', `${name}-${writeTime}.json`), JSON.stringify(content))
 }
 
+const toggleMongo = value => {
+    useMongo = value
+}
+
+const toggleMongoVerbose = value => {
+    mongoVerbose = value
+}
 
 module.exports = {
     pushData,
     writeData,
-    buildRecord
+    buildRecord,
+    initMongo,
+    toggleMongo,
+    toggleMongoVerbose
 }

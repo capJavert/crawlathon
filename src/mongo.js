@@ -39,7 +39,19 @@ const getClient = () => {
     return mongoClient
 }
 
+function insertData (collection, query, data, verbose = false) {
+      collection.updateOne(query, { $set: data}, { upsert: true }, () => {
+          collection.find().toArray((err, items) => {
+              if (verbose) {
+                  console.log('items', items)
+                  console.error('error', err)
+              }
+          })
+      })
+}
+
 module.exports = {
     connect,
-    getClient
+    getClient,
+    insertData
 }
