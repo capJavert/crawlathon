@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const bs = require('binary-search');
 const fs = require('fs');
+const chalk = require('chalk');
 
 //const cmp = (first, second) => first.value < second.value ? -1 : (first.value > second.value ? 1 : 0)
 const cmp = (first, second) => first.value.localeCompare(second.value);
@@ -159,7 +160,7 @@ const isRequestValid = (req, includeJs = true, defaultReturn = false) => {
  * @param actual string[] strings to compare against
  * @param filter Regex[] array of filter, only matching will be compared against
  */
-const report = (actual, filter = [], results) => {
+const report = (actual, filter = [], results, site) => {
     let expected = fs.readFileSync('./test_data/sorted_valid_links.txt').toString().split("\n");
 
     if (filter.length > 0) {
@@ -168,6 +169,8 @@ const report = (actual, filter = [], results) => {
 
     const result = check(expected, actual);
 
+    console.log()
+    console.log(chalk.bold(site))
     console.log('Found links: ' + actual.length);
     console.log('Missing links: ' + result.missing.length);
     console.log('Extra links: ' + result.extra.length);
@@ -195,7 +198,7 @@ const reportAll = () => {
             throw new Error('Data "name" missing in reporting');
         }
 
-        if (results.name === undefined) {
+        if (results[name] === undefined) {
             results[name] = [];
         }
 
@@ -207,10 +210,10 @@ const reportAll = () => {
     });
 
     const reports = {};
-    
+
     for (const site of _.keys(results)) {
         const actual = results[site].map((req) => req.url);
-        const res = report(actual, [], results);
+        const res = report(actual, [], results, site);
         reports[site] = res;
     }
 
