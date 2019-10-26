@@ -4,14 +4,29 @@ const { getTextFile } = require('../fetch')
 const { jsonUrlParser, csvUrlParser, textUrlParser } = require('../parser')
 const chalk = require('chalk')
 
+process.on('SIGINT', () => {
+    if (typeof global.onTerminate === 'function') {
+        global.onTerminate()
+    }
+
+    process.exit()
+})
+
 // static crawler supports json, csv and plaintext
-const crawlUrls = async ({ name, urls, requestLimit, concurrency = 10, options = {}, log = false, plainTextFallback = true }) => {
+const crawlUrls = async ({ name, urls, requestLimit, concurrency = 10, options = {}, log = false, plainTextFallback = true, fetchOptions = {}, onTerminate }) => {
     const store = {}
 
     const requestList = new Apify.RequestList({
-        sources: urls.map(url => ({ url })),
+        sources: urls.map(url => (
+            new Apify.Request({
+                url,
+                ...fetchOptions
+            })
+        )),
     })
     await requestList.initialize({})
+
+    global.onTerminate = () => onTerminate({ name, data: store })
 
     const crawler = new Apify.BasicCrawler({
         ...options,
@@ -21,7 +36,7 @@ const crawlUrls = async ({ name, urls, requestLimit, concurrency = 10, options =
                 console.log(request.url)
             }
 
-            const result = await getTextFile(request.url)
+            const result = await getTextFile(request.url, fetchOptions)
             let urls = []
 
             try {
@@ -47,6 +62,8 @@ const crawlUrls = async ({ name, urls, requestLimit, concurrency = 10, options =
     await crawler.run()
 
     console.log(chalk.green.bold('Done!'))
+
+    global.onTerminate = undefined
 
     return { name, data: store }
 }
