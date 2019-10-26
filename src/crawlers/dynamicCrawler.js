@@ -37,6 +37,9 @@ const crawlUrl = async ({ name, url, requestLimit, pseudoUrls = [], concurrency 
             useLiveView: true,
         },
         requestQueue,
+        handleRequestFunction: ({ request }) => {
+            pushData(request, false, store)
+        },
         gotoFunction: async ({ page, request }) => {
             if (listenForRequestsTimeout) {
                 listenForRequests(page, listenForRequestsTimeout, type => payload =>  {
@@ -57,18 +60,18 @@ const crawlUrl = async ({ name, url, requestLimit, pseudoUrls = [], concurrency 
             console.log(`${request.url}: ${title}`)
 
             if (typeof parsePage === 'function') {
-                await parsePage(request.url, page)
+                await parsePage(request, page, requestQueue)
+            } else {
+                await Apify.utils.enqueueLinks({
+                    page,
+                    selector,
+                    pseudoUrls: parsedPseudoUrls,
+                    requestQueue,
+                    transformRequestFunction
+                })
             }
 
             pushData(request, response, store)
-
-            await Apify.utils.enqueueLinks({
-                page,
-                selector,
-                pseudoUrls: parsedPseudoUrls,
-                requestQueue,
-                transformRequestFunction
-            })
         },
         maxRequestsPerCrawl: requestLimit,
         maxConcurrency: concurrency,
