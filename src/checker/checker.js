@@ -49,9 +49,9 @@ const check = (expected, actual) => {
         if (expected[i].hits !== 1) {
             missing.push(expected[i].value);
 
-            if (expected[i].hits > 1) {
-                console.error(expected[i].value + " found multiple times: " + expected[i].hits);
-            }
+            // if (expected[i].hits > 1) {
+            //     console.error(expected[i].value + " found multiple times: " + expected[i].hits);
+            // }
         }
     }
 
