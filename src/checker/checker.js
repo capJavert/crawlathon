@@ -38,10 +38,15 @@ const check = (expected, actual) => {
 
     const missing = [];
     const extra = [];
+    const found = [];
 
     for (let i = 0; i < expected.length; i++) {
+        if (expected[i].hits === 1) {
+            found.push(expected[i].value);
+        }
+
         if (expected[i].hits !== 1) {
-            missing.push(expected[i].value)
+            missing.push(expected[i].value);
 
             if (expected[i].hits > 1) {
                 console.error(expected[i].value + " found multiple times: " + expected[i].hits);
@@ -57,51 +62,28 @@ const check = (expected, actual) => {
 
     return {
         missing: missing,
-        extra: extra
+        extra: extra,
+        found: found,
     }
 };
-
-/**
- * Generates a simple report
- *
- * @param actual string[] strings to compare against
- * @param filter Regex[] array of filter, only matching will be compared against
- */
-const report = (actual, filter = []) => {
-    let expected = fs.readFileSync('./test_data/sorted_valid_links.txt').toString().split("\n");
-
-    if (filter.length > 0) {
-        expected = expected.filter((item) => filter.some((re) => re.test(item)));
-    }
-
-    const result = check(expected, actual);
-
-    console.log('Found links: ' + actual.length);
-    console.log('Missing links: ' + result.missing.length);
-    console.log('Extra links: ' + result.extra.length);
-    // console.log(result.extra) 
-
-    const totalScore = actual.length + (result.extra.length * -5)
-    console.log('Total score: ' + totalScore)
-}
 
 /**
  * @param req request object from crwaler
  * @returns boolean is link valid
  */
-const isRequestValid = (req, includeJs = true) => {
+const isRequestValid = (req, includeJs = true, defaultReturn = false) => {
     const blackLister = [
         // filter out by url content
         (req) => {
             if (!includeJs) {
-                const jsRegex = /.*\.js(\?|$)/;
+                const jsRegex = /\.js(\?|$)/;
 
                 if (jsRegex.test(req.url)) {
                     return true
                 }
             }
 
-            const regex = /.*(google|.*\.png|.*\.jpg|.*\.jepg|.*\.gif|.*\.mp4|.*\.vid|.*\.css)(\?.*|$)/;
+            const regex = /\.(?:google|png|jpg|epg|gif|mp4|vid|css)(\?.*|$)/;
 
             if (regex.test(req.url)) {
                 return true;
@@ -138,17 +120,61 @@ const isRequestValid = (req, includeJs = true) => {
         },
         // filter by extension
         (req) => {
-            const regex = /.*\.(?:zip|rar|exe|tar|iso|img|dmg|gz|7z|pdf|.*post_download.*)(\?.*|$)/;
+            const regex = /\.(?:zip|rar|exe|tar|iso|img|dmg|gz|7z|pdf|apk)(\?.*|$)/;
             return regex.test(req.url);
         }
+    ]
+
+    const specialGuy = [
+        (req) => {
+            //const regex = /application\/(x-)?javascript.*|application\/x-msdos-program.*|text\/javascript.*|application\/x-msdownload.*/;
+            const regex = /text\/html/;
+
+            if (!req.hasResponse) {
+                return true;
+            }
+
+            try {
+                const contentType = _.get(req, 'headers.content-type');
+                return req.isOk && regex.test(contentType);
+            } catch (e) {
+                console.log("Error while filtering: " + JSON.stringify(req));
+                return false;
+            }
+        },
     ]
 
     if (blackLister.some(validator => validator(req))) return false;
 
     if (whiteLister.some(validator => validator(req))) return true;
 
-    // default to true
-    return true;
+    if (specialGuy.some(validator => validator(req))) return false;
+
+    return defaultReturn;
+}
+
+/**
+ * Generates a simple report
+ *
+ * @param actual string[] strings to compare against
+ * @param filter Regex[] array of filter, only matching will be compared against
+ */
+const report = (actual, filter = [], results) => {
+    let expected = fs.readFileSync('./test_data/sorted_valid_links.txt').toString().split("\n");
+
+    if (filter.length > 0) {
+        expected = expected.filter((item) => filter.some((re) => re.test(item)));
+    }
+
+    const result = check(expected, actual);
+
+    console.log('Found links: ' + actual.length);
+    console.log('Missing links: ' + result.missing.length);
+    console.log('Extra links: ' + result.extra.length);
+    // console.log(result.extra);
+
+    const totalScore = actual.length + (result.extra.length * -1)
+    console.log('Total score: ' + totalScore)
 }
 
 /**
@@ -156,18 +182,33 @@ const isRequestValid = (req, includeJs = true) => {
  */
 const reportAll = () => {
     const results = {};
-    fs.readdirSync('./data').filter((file) => /.*\.json/.test(file)).forEach((file) => {
-        const data = require('./../../data/' + file).data;
+    var filesToRead = [];
+
+    fs.readdirSync('./data').forEach((dir) => {
+        const path = `./data/${dir}`;
+        if (fs.lstatSync(path).isFile()) {
+            return;
+        }
+
+        const newFiles = fs.readdirSync(path).filter((file) => /.*\.json/.test(file)).map((file) => `${path}/${file}`);
+        filesToRead = [
+            ...filesToRead,
+            ...newFiles,
+        ]
+    });
+
+    filesToRead.forEach((file) => {
+        const data = require('./../../' + file).data;
 
         for(const req of data) {
-            if (isRequestValid(req)) {
+            if (isRequestValid(req, includeJs = false, defaultReturn = true)) {
                 results[req.url] = req
             }
         }
 
     });
 
-    report(_.keys(results));
+    report(_.keys(results), [], results);
 }
 
 module.exports = {
