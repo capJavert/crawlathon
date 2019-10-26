@@ -3,6 +3,14 @@ const { pushData } = require('../data')
 const deviceProfiles = require('../deviceProfiles')
 const chalk = require('chalk')
 
+process.on('SIGINT', () => {
+    if (typeof global.onTerminate === 'function') {
+        global.onTerminate()
+    }
+
+    process.exit()
+})
+
 // listen for requests/responses after page payload
 // this catches for example download initiators with countdown
 const listenForRequests = async (page, timeout, handler) => {
@@ -19,13 +27,20 @@ const listenForRequests = async (page, timeout, handler) => {
 }
 
 // crawl website and take url as entrypoint
-const crawlUrl = async ({ name, url, requestLimit, pseudoUrls = [], concurrency = 10, options = {}, transformRequestFunction, listenForRequestsTimeout = 2000, parsePage, selector = 'a' }) => {
+const crawlUrl = async ({ name, url, requestLimit, pseudoUrls = [], concurrency = 10, options = {}, transformRequestFunction, listenForRequestsTimeout = 2000, parsePage, selector = 'a', fetchOptions = {}, onTerminate }) => {
     process.env.APIFY_LOCAL_STORAGE_DIR = `data/${name}`
 
     const store = {}
     const requestQueue = await Apify.openRequestQueue()
-    await requestQueue.addRequest({ url: url })
+    await requestQueue.addRequest(
+        new Apify.Request({
+            url,
+            ...fetchOptions
+        })
+    )
     const parsedPseudoUrls = pseudoUrls.map(pseudoUrl => new Apify.PseudoUrl(pseudoUrl))
+
+    global.onTerminate = () => onTerminate({ name, data: store })
 
     const crawler = new Apify.PuppeteerCrawler({
         launchPuppeteerOptions: {
@@ -80,6 +95,8 @@ const crawlUrl = async ({ name, url, requestLimit, pseudoUrls = [], concurrency 
     await crawler.run()
 
     console.log(chalk.green.bold('Done!'))
+
+    global.onTerminate = undefined
 
     return { name, data: store }
 }
