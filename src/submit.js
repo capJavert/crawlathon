@@ -19,7 +19,7 @@ const submitUris = async (siteName, uris = []) => {
     console.log(siteName)
 
     for(const chunk of splitUris) {
-        fetch('http://hackathon.reversinglabs.com/api/test/bulk', {
+        fetch('http://hackathon.reversinglabs.com/api/query/bulk', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
